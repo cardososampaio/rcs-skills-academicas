@@ -7,12 +7,41 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from urllib.parse import quote, urljoin
+from . import VERSION
 from .http import blocked, now
 from .model import canonical, clean, normalize_doi, as_list, public_url, TYPE_MAP
 
 PRIMARY = ("openalex", "scielo", "doaj")
 SECONDARY = ("crossref", "semantic_scholar")
 ALL_SOURCES = PRIMARY + SECONDARY + ("bdtd",)
+# Brazilian lenses are separate, labelled OpenAlex queries. They never replace the unfiltered query,
+# because Brazilian venue, Brazilian affiliation and SciELO listing are three distinct characteristics.
+LENSES = {"br_venue": "primary_location.source.country_code:BR",
+          "br_affiliation": "authorships.institutions.country_code:BR",
+          "scielo_listed": "primary_location.source.listed_in:scielo"}
+SCOPES = ("title_abstract", "fulltext")
+# OpenAlex files conference papers under "article", so that type has no narrower server-side filter.
+OPENALEX_TYPES = {"article": "article", "review": "review", "conference-paper": "article", "book-chapter": "book-chapter",
+                  "preprint": "preprint", "thesis": "dissertation", "book": "book"}
+SCIELO_INDIRECT_NOTE = "Retrieved through OpenAlex from a journal listed in SciELO. The SciELO portal itself was not searched for this record"
+
+def openalex_types(config):
+    """Server-side type filter, so the per-query ceiling is not spent on out-of-scope documents.
+
+    Returns no filter when a requested type has no known OpenAlex equivalent, or when the plan disables it.
+    """
+    if config.get("openalex_type_filter") is False:
+        return []
+    wanted = config.get("types") or ["article", "review"]
+    if any(t not in OPENALEX_TYPES for t in wanted):
+        return []
+    return sorted({OPENALEX_TYPES[t] for t in wanted})
+
+def openalex_id(record):
+    value = str((record.get("source_ids") or {}).get("openalex") or "")
+    match = re.search(r"W\d+$", value)
+    return match[0] if match else ""
+
 LANGS = {"portuguese": "pt", "português": "pt", "english": "en", "inglês": "en", "spanish": "es", "español": "es", "espanhol": "es"}
 
 @dataclass
@@ -26,6 +55,8 @@ class SearchResult:
     complete: bool = False
     error: str = ""
     raw_paths: list = field(default_factory=list)
+    options: dict = field(default_factory=dict)
+    quota: dict = field(default_factory=dict)
     retrieved_at: str = field(default_factory=now)
     def manifest(self):
         return {k: v for k, v in self.__dict__.items() if k != "records"} | {"retrieved_count": len(self.records)}
@@ -43,7 +74,9 @@ def failure(response):
 
 def attach(r, source, query, response, raw):
     r["sources"] = [source]
-    r["provenance"] = [{"source": source, "query": query, "retrieved_at": now(), "raw_path": response.raw_path, "source_url": response.url}]
+    # The version travels with each record: a later change in results can then be attributed
+    # either to the literature or to a change in the search procedure.
+    r["provenance"] = [{"source": source, "query": query, "retrieved_at": now(), "skill_version": VERSION, "raw_path": response.raw_path, "source_url": response.url}]
     r["metadata_by_source"] = {source: [raw]}
     return canonical(r)
 
@@ -252,12 +285,25 @@ def parse_bdtd_rss(text):
     totals = bylocal(root, "totalResults")
     return records, int(totals[0].text) if totals and (totals[0].text or "").isdigit() else None
 
-def search(client, source, query, config):
+def search(client, source, query, config, options=None):
     if source not in ALL_SOURCES:
         raise ValueError(f"Unsupported source: {source}")
     if source == "bdtd" and not config.get("bdtd_requested"):
         raise ValueError("BDTD requires an explicit user request and bdtd_requested=true")
-    out = SearchResult(source, query)
+    options = dict(options or {})
+    extra = dict(options.pop("provenance", None) or {})
+    if options and source != "openalex":
+        raise ValueError("scope, lens and relation apply only to OpenAlex")
+    if options.get("lens") and options["lens"] not in LENSES:
+        raise ValueError("Unsupported lens: " + str(options["lens"]))
+    relation = options.get("relation")
+    if relation and (len(relation) != 2 or relation[0] not in ("cites", "cited_by") or not re.fullmatch(r"W\d+", str(relation[1]))):
+        raise ValueError("relation must be (cites|cited_by, OpenAlex work ID)")
+    if source == "openalex" and not relation:
+        options["scope"] = options.get("scope") or config.get("openalex_scope") or "title_abstract"
+        if options["scope"] not in SCOPES:
+            raise ValueError("scope must be title_abstract or fulltext")
+    out = SearchResult(source, query, options={k: v for k, v in options.items()} | ({"route": extra["route"]} if extra.get("route") else {}))
     maximum, cursor, page, seen = config.get("max_per_query", 60), "*", 1, set()
     while len(out.records) < maximum:
         # Numbered-page APIs require a constant page size throughout the search.
@@ -265,18 +311,30 @@ def search(client, source, query, config):
         filters = []
         start, end = config.get("year_start"), config.get("year_end")
         if source == "openalex":
-            params = {"search": query, "per_page": count, "cursor": cursor}
+            params = {"per_page": count, "cursor": cursor}
+            if relation:
+                filters.append(f"{relation[0]}:{relation[1]}")
+            else:
+                # The plain "search" parameter also matches full text and returns a much noisier set.
+                params["search" if options["scope"] == "fulltext" else "search.title_and_abstract"] = query
             if start:
                 filters.append(f"from_publication_date:{start}-01-01")
             if end:
                 filters.append(f"to_publication_date:{end}-12-31")
+            types = openalex_types(config)
+            if types:
+                filters.append("type:" + "|".join(types))
+            if options.get("lens"):
+                filters.append(LENSES[options["lens"]])
             if config.get("affiliation_country"):
                 filters.append("authorships.institutions.country_code:" + config["affiliation_country"])
             if filters:
                 params["filter"] = ",".join(filters)
+            # Each user supplies their own key through the environment. It is redacted from logs and never exported.
             key = os.getenv("OPENALEX_API_KEY")
-            headers = {"Authorization": "Bearer " + key} if key else {}
-            response = client.get("https://api.openalex.org/works", params, headers)
+            if key:
+                params["api_key"] = key
+            response = client.get("https://api.openalex.org/works", params)
         elif source == "crossref":
             params = {"query": query, "rows": count, "cursor": cursor}
             if start:
@@ -304,6 +362,10 @@ def search(client, source, query, config):
             response = client.get("https://bdtd.ibict.br/vufind/Search/Results", {"lookfor": query, "type": "AllFields", "view": "rss", "page": page, "limit": count})
         if response.raw_path:
             out.raw_paths.append(response.raw_path)
+        if source == "openalex" and response.headers:
+            head = {k.lower(): v for k, v in response.headers.items()}
+            quota = {name: head.get("x-ratelimit-" + header) for name, header in (("remaining_usd", "remaining-usd"), ("limit_usd", "limit-usd"))}
+            out.quota = {k: v for k, v in quota.items() if v is not None} or out.quota
         status, error = failure(response)
         if status:
             out.status, out.error = ("partial" if out.records else status), error
@@ -364,7 +426,11 @@ def search(client, source, query, config):
                 break
             seen.add(page_key)
             for raw, record in zip(items, mapped):
-                out.records.append(attach(record, source, query, response, raw))
+                attached = attach(record, source, query, response, raw)
+                attached["provenance"][0].update({k: v for k, v in options.items() if k in ("scope", "lens")} | extra)
+                if extra.get("route") == "scielo_indirect_via_openalex":
+                    attached["notes"].append(SCIELO_INDIRECT_NOTE)
+                out.records.append(attached)
                 if len(out.records) >= maximum:
                     break
             if not items and out.reported_total is not None and len(out.records) < out.reported_total:

@@ -12,6 +12,8 @@ Copiar `assets/search-plan.json` para a pasta da pesquisa. Substituir pergunta, 
 
 `config.types` aceita `article`, `review`, `conference-paper`, `book-chapter` e tipos explicitamente pedidos. Artigos e revisões são o padrão. `config.languages` contém códigos de idioma, enquanto o idioma anotado em cada consulta descreve a formulação, sem filtrar automaticamente os documentos.
 
+Uma consulta ao OpenAlex aceita dois campos opcionais. `scope` define o alcance do texto pesquisado: `title_abstract`, que é o padrão, ou `fulltext`. `lens` acrescenta um recorte brasileiro: `br_venue`, `br_affiliation` ou `scielo_listed`. A mesma expressão pode aparecer no plano com recortes diferentes. `config.openalex_scope` altera o alcance padrão do plano, `config.openalex_type_filter` e `config.scielo_fallback` aceitam `false` para desativar o filtro de tipos na base e a rota indireta da SciELO.
+
 `max_per_query` é um teto de recuperação por combinação fonte e consulta. O padrão simples é 60 e o aprofundado 200. Ajustar ao tamanho do tema, cobertura e limites das bases. Sempre informar truncamento. Isso não é um número obrigatório de referências na revisão.
 
 Variáveis opcionais de acesso
@@ -23,7 +25,7 @@ S2_API_KEY
 UNPAYWALL_EMAIL
 ```
 
-Não inventar contato pessoal, copiar chaves para os arquivos nem pedir chaves que não sejam necessárias. Não ativar custos pagos para executar o plano.
+As chaves pertencem a quem executa a busca e ficam apenas no ambiente dessa pessoa. Pedir ao usuário que crie a própria chave gratuita do OpenAlex antes de buscas grandes. Não inventar contato pessoal, copiar chaves para os arquivos nem pedir chaves que não sejam necessárias. Não ativar custos pagos para executar o plano.
 
 ## Comandos
 
@@ -38,7 +40,7 @@ O atalho `--query` usa a mesma expressão textual nas bases e serve a pilotos si
 
 Saída 0 significa conclusão das operações programáticas, sem garantir leitura ou exaustividade. Saída 2 significa que ao menos uma busca falhou ou foi parcial, com preservação das exportações. Saída 1 significa erro de configuração ou execução. Não ignorar o manifesto quando a saída for 0, pois pode haver truncamento pelo teto.
 
-O diagnóstico executa uma consulta pequena em cada base e testa acesso e forma da resposta. Ele não substitui a busca temática nem demonstra qualidade da recuperação. BDTD só é testada com `--bdtd`, após o pedido explícito.
+O diagnóstico executa uma consulta pequena em cada base e testa acesso e forma da resposta. Informa também a cota restante do OpenAlex e quais credenciais estão configuradas, sem exibir seus valores. Se a chave do OpenAlex estiver ausente, orientar o usuário a criá-la. Se o portal SciELO estiver bloqueado, avisar que a recuperação será indireta. Ele não substitui a busca temática nem demonstra qualidade da recuperação. BDTD só é testada com `--bdtd`, após o pedido explícito.
 
 ## Importar e consolidar
 
@@ -55,6 +57,12 @@ Aceitar listas JSON, envelopes de respostas suportadas e CSV exportado por esta 
 Para o CSV de cinco colunas produzido por easyScieloPack, usar `easy_scielo_pack`. Tipo documental, idioma integral e veículo ficam pendentes até conferência. O manifesto identifica o formato e a entrada, e os metadados conservam os campos importados.
 
 A consolidação mantém a procedência dos registros. Preservar também os manifestos das execuções originais, porque cada um contém consultas e cobertura. O manifesto de consolidação não transforma uma coleta parcial em completa.
+
+```bash
+python scripts/academic_search.py citations --input sementes.json --direction both --maximum-seeds 20 --max-per-seed 50 --config plano_busca.json --out citacoes
+```
+
+Para a busca por citações, preparar uma lista com os documentos-semente pertinentes, como na seleção para download. `--direction` aceita `citing` (quem cita a semente), `references` (o que a semente cita) ou `both`. Sementes sem identificador OpenAlex são listadas no manifesto e não são pesquisadas. Consolidar o resultado com o corpus pelo comando `merge` e triar os novos registros como os demais.
 
 O enriquecimento consulta DOI no Crossref, completa campos ausentes e registra conflitos. Ele não verifica a sustentação de afirmações, nem considera DOI fora do Crossref inexistente. Conferir autores e versões antes de promover o estado de verificação.
 
@@ -78,13 +86,13 @@ Não alterar o estado para `full_text` apenas porque existe uma URL ou porque um
 
 | Arquivo | Função |
 |---|---|
-| `referencias.csv` | Todos os registros, metadados, seleção, URLs e procedência |
+| `referencias.csv` | Todos os registros, metadados, seleção, URLs e procedência, com a versão da skill e as datas da primeira e da última consulta que encontraram cada registro |
 | `referencias.bib` | Referências completas disponíveis em BibTeX, com chaves estáveis |
 | `registros.json` | Registros estruturados e metadados originais por fonte |
 | `referencias.csl.json` | Dados para processamento bibliográfico por CSL |
 | `bibliografia_completa.md` | Lista completa preliminar para conferência de estilo |
 | `matriz_evidencias.csv` | Campos de extração, decisões e leitura |
-| `manifesto_busca.json` | Consultas, limites, contagens e falhas |
+| `manifesto_busca.json` | Consultas, limites, contagens, falhas, rota usada para a SciELO, versão da skill e data da exportação |
 | `pendencias_metadados.json` | Campos ausentes e divergências |
 | `duplicatas_provaveis.json` | Pares que exigem conferência |
 | `raw/` | Respostas originais e estados HTTP |
@@ -93,6 +101,10 @@ Não alterar o estado para `full_text` apenas porque existe uma URL ou porque um
 | `auditoria_entrega.json` | Verificações estruturais e pendências |
 
 Escrever a revisão final em `relatorio.md`. Pode criar DOCX ou PDF se solicitado e se houver ferramentas adequadas, preservando o conteúdo e verificando a apresentação. Não apresentar o modelo ou o texto preliminar de referências como entrega concluída.
+
+## Comparar buscas feitas em momentos diferentes
+
+As colunas `skill_version`, `first_retrieved_at` e `last_retrieved_at` do CSV permitem distinguir uma mudança na literatura de uma mudança no procedimento de busca. Ficam vazias quando a procedência do registro não informa esses dados, como em registros digitados manualmente. A data da exportação nunca é usada no lugar da data da consulta. Ao repetir uma busca antiga, comparar as versões antes de interpretar diferenças de contagem. A versão 1.1.0 alterou o procedimento no OpenAlex, conforme o histórico no README.
 
 ## Conferir a entrega
 
