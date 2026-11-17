@@ -12,6 +12,10 @@ Os artigos de periódicos e artigos de revisão têm prioridade. Trabalhos de co
 
 OpenAlex, SciELO e DOAJ vêm primeiro. Crossref e Semantic Scholar são utilizados na recuperação complementar e na conferência de metadados. Integrações disponíveis de Consensus, Scite, SciSpace e serviços semelhantes devem ser usadas quando pertinentes.
 
+O portal SciELO costuma recusar buscas automatizadas. Nesses casos, a skill recupera pelo OpenAlex os periódicos listados na SciELO e identifica os registros como recuperação indireta, sem apresentá-la como busca direta.
+
+O OpenAlex funciona sem chave, com uma cota diária pequena e compartilhada por rede. Cada pessoa que usa a skill cria a própria chave gratuita e a define em `OPENALEX_API_KEY` no próprio computador. Nenhuma chave acompanha este repositório.
+
 O pacote mantém o conjunto de registros recuperados nas exportações, com seleção, motivos de exclusão, URLs, fontes e pendências. Pesquisa sobre o Brasil, afiliação brasileira, periódico brasileiro e idioma português são dimensões distintas.
 
 ## Arquivos da skill
@@ -41,9 +45,18 @@ Para um diagnóstico pequeno de acesso às bases
 python scripts/academic_search.py doctor --out diagnostico
 ```
 
+Na versão 1.1.0, os 89 testes passaram em Windows com Python 3.14.
+
 Na preparação da versão 1.0.0, os 75 testes passaram, inclusive na cópia descompactada do pacote. Foram realizados testes de busca em OpenAlex, DOAJ, Crossref e Semantic Scholar, de enriquecimento por DOI e um uso independente com registros fornecidos. O acesso direto à SciELO retornou bloqueio neste ambiente e foi registrado como tal.
 
 A documentação e o código do easyScieloPack foram examinados, e seu formato de importação possui testes. O pacote R não foi executado no ambiente de preparação porque R não estava disponível. Consulte [`references/easyscielopack.md`](references/easyscielopack.md).
+
+## Histórico do procedimento de busca
+
+Mudanças no modo de procurar alteram os resultados mesmo quando a literatura é a mesma. O CSV e o manifesto registram a versão da skill e a data das consultas para que buscas feitas em momentos diferentes possam ser comparadas.
+
+- **1.1.0** No OpenAlex, a busca padrão passou de texto completo para título e resumo, e os tipos documentais do plano passaram a ser filtrados na própria base. Ambas as mudanças reduzem o número de registros recuperados em relação à 1.0.0. Foram acrescentados os recortes brasileiros opcionais, a busca por citações e referências e a recuperação indireta da SciELO quando o portal bloqueia a busca. As exportações passaram a registrar versão e datas de consulta.
+- **1.0.0** Primeira versão publicada.
 
 ## Limites
 

@@ -14,7 +14,7 @@ from urllib.parse import quote
 from academic_core import VERSION
 from academic_core.http import Client, atomic_json, now
 from academic_core.model import canonical, deduplicate, eligibility, merge_records, normalize_text
-from academic_core.sources import PRIMARY, SECONDARY, ALL_SOURCES, search, crossref_record, openalex_record, doaj_record, s2_record, easyscielopack_record, attach, failure
+from academic_core.sources import PRIMARY, SECONDARY, ALL_SOURCES, LENSES, SCOPES, search, crossref_record, openalex_record, doaj_record, s2_record, easyscielopack_record, attach, failure, openalex_id
 from academic_core.exports import export_all
 from academic_core.downloads import retrieve_pdfs
 
@@ -73,6 +73,11 @@ def validate_plan(plan):
         raise ValueError("year_start cannot exceed year_end")
     if config.get("citation_style") not in ("apa", "abnt", "auto"):
         raise ValueError("citation_style must be apa, abnt or auto")
+    if config.get("openalex_scope") not in (None,) + SCOPES:
+        raise ValueError("openalex_scope must be title_abstract or fulltext")
+    for key in ("openalex_type_filter", "scielo_fallback"):
+        if config.get(key) not in (None, True, False):
+            raise ValueError(key + " must be true or false")
     languages = config.get("languages", [])
     if not isinstance(languages, list) or any(not isinstance(lang, str) or not re.fullmatch(r"[a-z]{2}", lang) for lang in languages):
         raise ValueError("Use a list of lowercase ISO two-letter language codes")
@@ -88,7 +93,13 @@ def validate_plan(plan):
             raise ValueError("Each query needs a supported source and nonempty query string")
         if q["source"] == "bdtd" and not config.get("bdtd_requested"):
             raise ValueError("BDTD is opt-in. Set bdtd_requested only after an explicit user request")
-        ident = (q["source"], q["query"])
+        if (q.get("scope") or q.get("lens")) and q["source"] != "openalex":
+            raise ValueError("scope and lens apply only to OpenAlex queries")
+        if q.get("scope") not in (None,) + SCOPES:
+            raise ValueError("scope must be title_abstract or fulltext")
+        if q.get("lens") not in (None,) + tuple(LENSES):
+            raise ValueError("lens must be one of " + ", ".join(LENSES))
+        ident = (q["source"], q["query"], q.get("scope"), q.get("lens"))
         if ident in seen:
             raise ValueError("Duplicate source/query pair in plan")
         seen.add(ident)
@@ -122,6 +133,36 @@ def finalize(records, out, config, manifest):
     print(json.dumps(summary | {"output": str(out)}, ensure_ascii=False))
     return unique_records
 
+def query_options(q):
+    return {k: q[k] for k in ("scope", "lens") if q.get(k)}
+
+def job_id(source, query, options=None, route=""):
+    # Queries without options keep their original identifier, so earlier searches remain resumable.
+    suffix = ("\0" + json.dumps(options, sort_keys=True) if options else "") + ("\0" + route if route else "")
+    return hashlib.sha256((source + "\0" + query + suffix).encode()).hexdigest()[:20]
+
+def record_job(state, client, job, result, event_start, checkpoint):
+    # On retry, remove only records belonging to this job, then replace them.
+    state["records"] = [r for r in state["records"] if r.get("search_job") != job]
+    for r in result.records:
+        r["search_job"] = job
+        state["records"].append(r)
+    state["jobs"][job] = result.manifest()
+    state.setdefault("query_attempts", []).append({"job_id": job, **result.manifest()})
+    state.setdefault("http_events", []).extend(client.events[event_start:])
+    atomic_json(checkpoint, state)
+    route = (result.options or {}).get("route", "")
+    print(f"{result.source}{' (' + route + ')' if route else ''} {result.status} {len(result.records)} records", file=sys.stderr)
+
+def scielo_route(jobs):
+    direct = [j for j in jobs if j["source"] == "scielo"]
+    if not direct:
+        return "not_requested"
+    indirect = any((j.get("options") or {}).get("route") == "scielo_indirect_via_openalex" and j["status"] in ("ok", "empty") for j in jobs)
+    if all(j["status"] in ("ok", "empty") for j in direct):
+        return "direct"
+    return ("direct_partial_and_" if any(j["retrieved_count"] for j in direct) else "") + ("indirect_via_openalex" if indirect else "unavailable")
+
 def run_search(args):
     if args.plan:
         plan = validate_plan(json.loads(Path(args.plan).read_text(encoding="utf-8-sig")))
@@ -145,22 +186,24 @@ def run_search(args):
     client = Client(out, timeout=args.timeout, retries=1)
     order = {s: i for i, s in enumerate(ALL_SOURCES)}
     for q in sorted(plan["queries"], key=lambda x: order[x["source"]]):
-        job = hashlib.sha256((q["source"] + "\0" + q["query"]).encode()).hexdigest()[:20]
+        options = query_options(q)
+        job = job_id(q["source"], q["query"], options)
         if job in state["jobs"] and state["jobs"][job]["status"] in ("ok", "empty"):
             continue
         event_start = len(client.events)
-        result = search(client, q["source"], q["query"], plan["config"])
-        # On retry, remove only records belonging to this job, then replace them.
-        state["records"] = [r for r in state["records"] if r.get("search_job") != job]
-        for r in result.records:
-            r["search_job"] = job
-            state["records"].append(r)
-        state["jobs"][job] = result.manifest()
-        state.setdefault("query_attempts", []).append({"job_id": job, **result.manifest()})
-        state.setdefault("http_events", []).extend(client.events[event_start:])
-        atomic_json(checkpoint, state)
-        print(f"{q['source']} {result.status} {len(result.records)} records", file=sys.stderr)
+        result = search(client, q["source"], q["query"], plan["config"], options) if options else search(client, q["source"], q["query"], plan["config"])
+        record_job(state, client, job, result, event_start, checkpoint)
+        if q["source"] == "scielo" and result.status not in ("ok", "empty") and plan["config"].get("scielo_fallback") is not False:
+            # The portal refused or broke off the search. Recover SciELO-listed journals through OpenAlex,
+            # labelled as indirect. The portal job stays failed, so the limitation remains visible.
+            route = "scielo_indirect_via_openalex"
+            fallback = job_id("openalex", q["query"], {"lens": "scielo_listed"}, route)
+            if not (fallback in state["jobs"] and state["jobs"][fallback]["status"] in ("ok", "empty")):
+                event_start = len(client.events)
+                indirect = search(client, "openalex", q["query"], plan["config"], {"lens": "scielo_listed", "provenance": {"route": route, "direct_search_failure": result.error or result.status}})
+                record_job(state, client, fallback, indirect, event_start, checkpoint)
     manifest = {"plan": plan, "started_at": state["started_at"], "finished_at": now(), "queries": list(state["jobs"].values()),
+                "scielo_route": scielo_route(list(state["jobs"].values())),
                 "query_attempts": state.get("query_attempts", []), "http_events": state.get("http_events", []),
                 "coverage_complete": all(j["complete"] for j in state["jobs"].values()), "limitations": [j for j in state["jobs"].values() if j["status"] not in ("ok", "empty") or j["truncated"]]}
     finalize(state["records"], out, plan["config"], manifest)
@@ -178,7 +221,7 @@ def run_import(args):
         r = canonical(r)
         if source:
             r["sources"] = list(dict.fromkeys(r["sources"] + [source]))
-            r["provenance"].append({"source": source, "method": "import", "format": args.format, "retrieved_at": now(), "input_file": str(Path(args.input)), "coverage": args.coverage})
+            r["provenance"].append({"source": source, "method": "import", "format": args.format, "retrieved_at": now(), "skill_version": VERSION, "input_file": str(Path(args.input)), "coverage": args.coverage})
             r.setdefault("metadata_by_source", {}).setdefault(source, []).append(raw)
         prepared.append(r)
     config = read_config(args.config) if args.config else {"citation_style": args.style, "languages": args.languages.split(",") if args.languages else [], "types": args.types.split(",")}
@@ -234,14 +277,45 @@ def run_merge(args):
     finalize(records, args.out, config, {"method": "consolidation", "inputs": list(args.inputs), "finished_at": now(), "coverage": "see_original_search_manifests"})
     return 0
 
+def run_citations(args):
+    records = [canonical(r) for r in load_records(args.input)]
+    config = dict(read_config(args.config)) if args.config else {"citation_style": args.style, "types": args.types.split(",")}
+    config["max_per_query"] = args.max_per_seed
+    seeds = [r for r in records if openalex_id(r)]
+    relations = {"citing": ["cites"], "references": ["cited_by"], "both": ["cites", "cited_by"]}[args.direction]
+    client = Client(args.out, timeout=args.timeout, retries=1)
+    found, jobs = [], []
+    for seed in seeds[:args.maximum_seeds]:
+        for relation in relations:
+            direction = "citing" if relation == "cites" else "references"
+            result = search(client, "openalex", f"{relation}:{openalex_id(seed)}", config,
+                            {"relation": (relation, openalex_id(seed)), "provenance": {"route": "citation_search", "direction": direction, "seed_record_id": seed["record_id"], "seed_title": seed["title"]}})
+            found.extend(result.records)
+            jobs.append(result.manifest() | {"seed_record_id": seed["record_id"], "direction": direction})
+            print(f"{direction} {seed['record_id']} {result.status} {len(result.records)} records", file=sys.stderr)
+    manifest = {"method": "citation search from seed documents", "input": str(args.input), "direction": args.direction, "finished_at": now(),
+                "queries": jobs, "seeds_searched": len(seeds[:args.maximum_seeds]), "seed_limit_reached": len(seeds) > args.maximum_seeds,
+                "seeds_without_openalex_id": [r["record_id"] for r in records if not openalex_id(r)],
+                "limitations": [j for j in jobs if j["status"] not in ("ok", "empty") or j["truncated"]], "http_events": client.events, "config": config}
+    finalize(found, args.out, config, manifest)
+    return 0 if all(j["status"] in ("ok", "empty") for j in jobs) else 2
+
 def run_doctor(args):
     client = Client(args.out, timeout=args.timeout, retries=0)
     result = []
     for source in ALL_SOURCES if args.bdtd else PRIMARY + SECONDARY:
         response = search(client, source, "democracia", {"max_per_query": 1, "bdtd_requested": args.bdtd})
         result.append(response.manifest())
-    atomic_json(Path(args.out) / "diagnostico_bases.json", result)
-    print(json.dumps([{k: row[k] for k in ("source", "status", "error", "retrieved_count")} for row in result], ensure_ascii=False))
+    # Report only whether each user-supplied credential is present. Values are never copied to the output.
+    credentials = {name: "configured" if os.getenv(name) else "absent" for name in ("OPENALEX_API_KEY", "S2_API_KEY", "CROSSREF_EMAIL", "UNPAYWALL_EMAIL")}
+    atomic_json(Path(args.out) / "diagnostico_bases.json", {"sources": result, "credentials": credentials})
+    print(json.dumps([{k: row[k] for k in ("source", "status", "error", "retrieved_count")} | ({"quota": row["quota"]} if row.get("quota") else {}) for row in result], ensure_ascii=False))
+    print(json.dumps({"credentials": credentials}), file=sys.stderr)
+    if credentials["OPENALEX_API_KEY"] == "absent":
+        print("OPENALEX_API_KEY absent: OpenAlex applies a small daily allowance shared by everyone on the same network address. "
+              "Ask the user to create their own free key at https://openalex.org/settings/api and set it in their own environment.", file=sys.stderr)
+    if any(row["source"] == "scielo" and row["status"] not in ("ok", "empty") for row in result):
+        print("SciELO portal unavailable to this script: searches recover SciELO-listed journals through OpenAlex, labelled as indirect.", file=sys.stderr)
     return 0 if any(r["status"] in ("ok", "empty") for r in result) else 2
 
 def parser():
@@ -268,6 +342,12 @@ def parser():
     m = sub.add_parser("merge", help="Consolidate API, plugin and curated records without dropping out-of-scope references")
     m.add_argument("--inputs", nargs="+", required=True); m.add_argument("--out", required=True); m.add_argument("--config")
     m.add_argument("--style", choices=("auto", "apa", "abnt"), default="auto"); m.add_argument("--types", default="article,review"); m.set_defaults(func=run_merge)
+    c = sub.add_parser("citations", help="Find works citing the seed documents and works they reference, through OpenAlex")
+    c.add_argument("--input", required=True); c.add_argument("--out", required=True)
+    c.add_argument("--direction", choices=("citing", "references", "both"), default="both")
+    c.add_argument("--maximum-seeds", type=int, default=20); c.add_argument("--max-per-seed", type=int, default=50)
+    c.add_argument("--config"); c.add_argument("--style", choices=("auto", "apa", "abnt"), default="auto")
+    c.add_argument("--types", default="article,review"); c.add_argument("--timeout", type=int, default=20); c.set_defaults(func=run_citations)
     d = sub.add_parser("doctor", help="Probe access and response schemas without interpreting failures as zero results")
     d.add_argument("--out", required=True); d.add_argument("--bdtd", action="store_true"); d.add_argument("--timeout", type=int, default=12); d.set_defaults(func=run_doctor)
     f = sub.add_parser("download", help="Optional PDF downloads, after the user's acceptance")

@@ -5,10 +5,11 @@ import hashlib
 import json
 import re
 from pathlib import Path
-from .http import atomic_json
+from . import VERSION
+from .http import atomic_json, now
 from .model import canonical, clean, normalize_text
 
-CSV_FIELDS = ["record_id", "title", "authors", "authors_json", "editors_json", "year", "publication_date", "document_type", "container_title", "publisher", "publisher_place", "edition", "series", "event_title", "event_location", "event_date", "institution", "degree", "accessed_date", "volume", "issue", "pages", "article_number", "doi", "url", "pdf_urls", "abstract", "keywords", "language", "issn", "isbn", "is_oa", "oa_status", "retracted", "licenses", "affiliations_json", "countries", "brazil_affiliation", "brazil_topic", "brazil_venue", "sources", "source_ids_json", "citations_by_source_json", "reading_level", "selection", "exclusion_reason", "study_kind", "themes", "missing_fields", "metadata_conflicts_json", "provenance_json", "notes", "metadata_json"]
+CSV_FIELDS = ["record_id", "title", "authors", "authors_json", "editors_json", "year", "publication_date", "document_type", "container_title", "publisher", "publisher_place", "edition", "series", "event_title", "event_location", "event_date", "institution", "degree", "accessed_date", "volume", "issue", "pages", "article_number", "doi", "url", "pdf_urls", "abstract", "keywords", "language", "issn", "isbn", "is_oa", "oa_status", "retracted", "licenses", "affiliations_json", "countries", "brazil_affiliation", "brazil_topic", "brazil_venue", "sources", "source_ids_json", "citations_by_source_json", "reading_level", "selection", "exclusion_reason", "study_kind", "themes", "missing_fields", "metadata_conflicts_json", "provenance_json", "skill_version", "first_retrieved_at", "last_retrieved_at", "notes", "metadata_json"]
 
 def csv_safe(value):
     text = "" if value is None else str(value)
@@ -29,6 +30,12 @@ def write_csv(records, path):
                        affiliations_json=dump(r["affiliations"]), source_ids_json=dump(r["source_ids"]),
                        citations_by_source_json=dump(r["citations_by_source"]), metadata_conflicts_json=dump(r["metadata_conflicts"]),
                        provenance_json=dump(r["provenance"]), metadata_json=dump(r.get("metadata_by_source", {})))
+            # Readable without the manifest: which version of the procedure found the record, and when.
+            # Empty when the provenance does not state it. Never filled with the export date.
+            steps = [p for p in r["provenance"] if isinstance(p, dict)]
+            dates = sorted(str(p["retrieved_at"]) for p in steps if p.get("retrieved_at"))
+            row.update(skill_version=" | ".join(sorted({str(p["skill_version"]) for p in steps if p.get("skill_version")})),
+                       first_retrieved_at=dates[0] if dates else "", last_retrieved_at=dates[-1] if dates else "")
             for key, value in row.items():
                 if isinstance(value, (list, dict)):
                     row[key] = dump(value)
@@ -226,6 +233,8 @@ def export_all(records, out, config, manifest=None):
         for r in records:
             writer.writerow({k: csv_safe(dump(r[k]) if isinstance(r.get(k), (list, dict)) else r.get(k)) for k in evidence_fields})
     if manifest is not None:
+        manifest.setdefault("software_version", VERSION)
+        manifest.setdefault("exported_at", now())
         atomic_json(out / "manifesto_busca.json", manifest)
     checksums = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file() and p.name != "checksums.json"}
     atomic_json(out / "checksums.json", checksums)

@@ -142,14 +142,14 @@ class WorkflowTests(unittest.TestCase):
             rows = [record(title=f"Fixture sintética {i}", year=2024+i%2, selection="included", themes=["Tema sintético"]) for i in range(21)]
             export_all(rows, root, {}, {})
             generate(rows, root / "figuras")
-            bibliography = (root / "bibliografia_completa.md").read_text()
+            bibliography = (root / "bibliografia_completa.md").read_text(encoding="utf-8")
             # Word-count fixture exercises structure, and is never a research report.
             text = "<!-- narrative:start -->\n<!-- executive:start -->" + "palavra " * 400 + "<!-- executive:end -->\n"
             text += "<!-- summary:start -->\n| Tema | Documentos |\n|---|---|\n| Sintético | 21 |\n<!-- summary:end -->\n"
             text += "<!-- top20:start -->\n" + "\n".join(r["record_id"] for r in rows[:20]) + "\n<!-- top20:end -->\n"
             text += "palavra " * 1700 + "\n<!-- narrative:end -->\n<!-- bibliography:start -->\n" + bibliography + "\n<!-- bibliography:end -->"
             report = root / "report.md"
-            report.write_text(text)
+            report.write_text(text, encoding="utf-8")
             result = audit(root, report, "deep")
             self.assertTrue(result["ok"], result)
 
