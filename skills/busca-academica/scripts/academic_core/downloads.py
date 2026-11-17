@@ -45,7 +45,7 @@ def retrieve_pdfs(records, client, out, approved=False, maximum=20):
         if dest.exists():
             ok, validation = validate_pdf(dest.read_bytes())
             if ok:
-                row.update(status="already_downloaded", file=str(dest), validation=validation)
+                row.update(status="already_downloaded", file=dest.name, validation=validation)
                 log.append(row)
                 continue
         for url in unique(urls)[:8]:
@@ -57,7 +57,7 @@ def retrieve_pdfs(records, client, out, approved=False, maximum=20):
             row["attempts"].append({"url": response.url, "validation": validation})
             if ok:
                 dest.write_bytes(response.body)
-                row.update(status="downloaded", file=str(dest), validation=validation)
+                row.update(status="downloaded", file=dest.name, validation=validation)
                 break
         log.append(row)
         atomic_json(out / "download_log.json", log)

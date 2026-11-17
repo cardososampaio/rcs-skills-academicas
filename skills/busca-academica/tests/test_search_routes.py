@@ -13,7 +13,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import academic_search as cli
 from academic_core import VERSION
-from academic_core.http import Response, redacted_url
+from academic_core.http import Client, Response, redacted_url
 from academic_core.model import canonical
 from academic_core.sources import search, SCIELO_INDIRECT_NOTE
 
@@ -175,6 +175,32 @@ class TraceabilityTests(unittest.TestCase):
             manifest = json.loads((Path(tmp) / "manifesto_busca.json").read_text(encoding="utf-8"))
             self.assertEqual(manifest["software_version"], VERSION)
             self.assertTrue(manifest["exported_at"])
+    def test_exported_paths_are_relative_to_the_output_folder(self):
+        # Exported files are shared, so they must not carry the local user's folder (for example C:\Users\<name>).
+        class Reply:
+            status = 200
+            headers = {"Content-Type": "application/json"}
+            def __init__(self):
+                self.body = json.dumps({"meta": {"count": 1}, "results": [work()]}).encode()
+            def read(self, n=-1):
+                return self.body
+            def geturl(self):
+                return "https://api.openalex.org/works"
+            def __enter__(self):
+                return self
+            def __exit__(self, *exc):
+                return False
+        with tempfile.TemporaryDirectory() as tmp:
+            client = Client(tmp, opener=lambda req, timeout: Reply())
+            result = search(client, "openalex", "q", {"max_per_query": 5})
+            raw_path = result.records[0]["provenance"][0]["raw_path"]
+            self.assertTrue(raw_path.startswith("raw/"))
+            self.assertTrue((Path(tmp) / raw_path).exists())
+            # The folder name is checked both raw and JSON-escaped (backslashes doubled on Windows).
+            leaks = {tmp, json.dumps(tmp)[1:-1]}
+            for text in (json.dumps(result.records, ensure_ascii=False), json.dumps(result.manifest()), json.dumps(client.events)):
+                for leak in leaks:
+                    self.assertNotIn(leak, text)
 
 if __name__ == "__main__":
     unittest.main()

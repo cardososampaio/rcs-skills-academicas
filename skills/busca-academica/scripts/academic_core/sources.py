@@ -6,6 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
+from pathlib import Path
 from urllib.parse import quote, urljoin
 from . import VERSION
 from .http import blocked, now
@@ -72,11 +73,20 @@ def failure(response):
         return "error", response.error or f"http_{response.status}"
     return "", ""
 
+def raw_reference(response):
+    """Path of the stored response relative to the output folder. Absolute paths would expose the local user name in shared exports."""
+    ref = getattr(response, "raw_ref", "")
+    if ref:
+        return ref
+    path = getattr(response, "raw_path", "")
+    return "raw/" + Path(path).name if path else ""
+
+
 def attach(r, source, query, response, raw):
     r["sources"] = [source]
     # The version travels with each record: a later change in results can then be attributed
     # either to the literature or to a change in the search procedure.
-    r["provenance"] = [{"source": source, "query": query, "retrieved_at": now(), "skill_version": VERSION, "raw_path": response.raw_path, "source_url": response.url}]
+    r["provenance"] = [{"source": source, "query": query, "retrieved_at": now(), "skill_version": VERSION, "raw_path": raw_reference(response), "source_url": response.url}]
     r["metadata_by_source"] = {source: [raw]}
     return canonical(r)
 
@@ -361,7 +371,7 @@ def search(client, source, query, config, options=None):
         else:
             response = client.get("https://bdtd.ibict.br/vufind/Search/Results", {"lookfor": query, "type": "AllFields", "view": "rss", "page": page, "limit": count})
         if response.raw_path:
-            out.raw_paths.append(response.raw_path)
+            out.raw_paths.append(raw_reference(response))
         if source == "openalex" and response.headers:
             head = {k.lower(): v for k, v in response.headers.items()}
             quota = {name: head.get("x-ratelimit-" + header) for name, header in (("remaining_usd", "remaining-usd"), ("limit_usd", "limit-usd"))}

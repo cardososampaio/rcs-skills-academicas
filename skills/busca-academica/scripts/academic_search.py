@@ -221,11 +221,11 @@ def run_import(args):
         r = canonical(r)
         if source:
             r["sources"] = list(dict.fromkeys(r["sources"] + [source]))
-            r["provenance"].append({"source": source, "method": "import", "format": args.format, "retrieved_at": now(), "skill_version": VERSION, "input_file": str(Path(args.input)), "coverage": args.coverage})
+            r["provenance"].append({"source": source, "method": "import", "format": args.format, "retrieved_at": now(), "skill_version": VERSION, "input_file": Path(args.input).name, "coverage": args.coverage})
             r.setdefault("metadata_by_source", {}).setdefault(source, []).append(raw)
         prepared.append(r)
     config = read_config(args.config) if args.config else {"citation_style": args.style, "languages": args.languages.split(",") if args.languages else [], "types": args.types.split(",")}
-    finalize(prepared, args.out, config, {"method": "import", "input": str(args.input), "source": source, "format": args.format, "coverage": args.coverage, "finished_at": now()})
+    finalize(prepared, args.out, config, {"method": "import", "input": Path(args.input).name, "source": source, "format": args.format, "coverage": args.coverage, "finished_at": now()})
     return 0
 
 def run_enrich(args):
@@ -262,7 +262,7 @@ def run_enrich(args):
             checks.append({"record_id": r["record_id"], "status": "unverified", "reason": "invalid_crossref_response"})
             client.invalidate(response)
     atomic_json(Path(args.out) / "verificacao_referencias.json", checks)
-    manifest = {"method": "DOI metadata enrichment", "input": str(args.input), "finished_at": now(),
+    manifest = {"method": "DOI metadata enrichment", "input": Path(args.input).name, "finished_at": now(),
                 "checked_records": len(checks), "check_limit": args.maximum, "check_limit_reached": len(records) > args.maximum,
                 "original_manifest": original, "http_events": client.events, "config": config}
     export_all(records, args.out, config, manifest)
@@ -274,7 +274,7 @@ def run_merge(args):
     records = []
     for path in args.inputs:
         records.extend(load_records(path))
-    finalize(records, args.out, config, {"method": "consolidation", "inputs": list(args.inputs), "finished_at": now(), "coverage": "see_original_search_manifests"})
+    finalize(records, args.out, config, {"method": "consolidation", "inputs": [Path(p).name for p in args.inputs], "finished_at": now(), "coverage": "see_original_search_manifests"})
     return 0
 
 def run_citations(args):
@@ -293,7 +293,7 @@ def run_citations(args):
             found.extend(result.records)
             jobs.append(result.manifest() | {"seed_record_id": seed["record_id"], "direction": direction})
             print(f"{direction} {seed['record_id']} {result.status} {len(result.records)} records", file=sys.stderr)
-    manifest = {"method": "citation search from seed documents", "input": str(args.input), "direction": args.direction, "finished_at": now(),
+    manifest = {"method": "citation search from seed documents", "input": Path(args.input).name, "direction": args.direction, "finished_at": now(),
                 "queries": jobs, "seeds_searched": len(seeds[:args.maximum_seeds]), "seed_limit_reached": len(seeds) > args.maximum_seeds,
                 "seeds_without_openalex_id": [r["record_id"] for r in records if not openalex_id(r)],
                 "limitations": [j for j in jobs if j["status"] not in ("ok", "empty") or j["truncated"]], "http_events": client.events, "config": config}

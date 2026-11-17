@@ -50,6 +50,7 @@ class Response:
     headers: dict | None = None
     url: str = ""
     raw_path: str = ""
+    raw_ref: str = ""
     error: str = ""
     cached: bool = False
     def text(self):
@@ -86,8 +87,8 @@ class Client:
         meta = raw.with_suffix(".json")
         if cache and raw.exists() and meta.exists():
             m = json.loads(meta.read_text(encoding="utf-8"))
-            response = Response(m["status"], raw.read_bytes(), m["content_type"], url=safe, raw_path=str(raw), cached=True)
-            self.events.append({"url": safe, "at": now(), "status": response.status, "cached": True, "raw_path": str(raw)})
+            response = Response(m["status"], raw.read_bytes(), m["content_type"], url=safe, raw_path=str(raw), raw_ref="raw/" + raw.name, cached=True)
+            self.events.append({"url": safe, "at": now(), "status": response.status, "cached": True, "raw_path": "raw/" + raw.name})
             return response
         response = Response(0, b"", url=safe, error="not_attempted")
         for attempt in range(self.retries + 1):
@@ -123,6 +124,7 @@ class Client:
         # Keep failed responses for diagnosis; reuse only successful non-challenge responses.
         raw.write_bytes(response.body)
         response.raw_path = str(raw)
+        response.raw_ref = "raw/" + raw.name
         atomic_json(raw.with_suffix(".response.json"), {"url": safe, "status": response.status, "content_type": response.content_type, "error": response.error, "at": now()})
         if 200 <= response.status < 300 and not blocked(response.body) and cache:
             atomic_json(meta, {"status": response.status, "content_type": response.content_type, "at": now()})

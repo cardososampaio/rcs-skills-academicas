@@ -95,7 +95,7 @@ Não alterar o estado para `full_text` apenas porque existe uma URL ou porque um
 | `manifesto_busca.json` | Consultas, limites, contagens, falhas, rota usada para a SciELO, versão da skill e data da exportação |
 | `pendencias_metadados.json` | Campos ausentes e divergências |
 | `duplicatas_provaveis.json` | Pares que exigem conferência |
-| `raw/` | Respostas originais e estados HTTP |
+| `raw/` | Respostas originais e estados HTTP Os registros e o manifesto apontam para esses arquivos por caminho relativo à pasta de saída, sem expor pastas do computador de quem fez a busca |
 | `checkpoint.json` | Estado de consultas para retomada |
 | `figuras/` | SVGs, dados CSV e manifesto das figuras |
 | `auditoria_entrega.json` | Verificações estruturais e pendências |
