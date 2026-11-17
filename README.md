@@ -8,10 +8,10 @@ O repositório reúne protocolos operacionais para busca bibliográfica, revisã
 
 | Skill | Finalidade | Versão |
 |---|---|---|
-| [Parecerista Acadêmico](skills/parecerista-academico/) | Avaliar manuscritos e produzir pareceres rastreáveis e construtivos | 2.0.0 |
+| [Parecerista Acadêmico](skills/parecerista-academico/) | Avaliar manuscritos e produzir pareceres rastreáveis e construtivos | 2.1.0 |
 | [Fichamento Acadêmico](skills/fichamento-academico/) | Produzir fichamentos densos, verificáveis e reutilizáveis | 3.0.0 |
 | [Melhorar Prompts Acadêmicos](skills/melhorar-prompts-academicos/) | Criar, avaliar e reescrever prompts para tarefas acadêmicas | 1.0.0 |
-| [Escrita Acadêmica](skills/escritaacademica/) | Planejar, redigir, revisar, reestruturar, traduzir e auditar textos acadêmicos | 1.0.0 |
+| [Escrita Acadêmica](skills/escritaacademica/) | Planejar, redigir, revisar, reestruturar, traduzir e auditar textos acadêmicos | 1.1.0 |
 | [Busca Acadêmica](skills/busca-academica/) | Buscar e revisar literatura brasileira e internacional, com CSV, BibTeX e relatórios | 1.0.0 |
 
 ### Parecerista Acadêmico
@@ -29,6 +29,8 @@ Principais recursos
 - melhor defesa possível do manuscrito antes de manter críticas adversariais
 - reconciliação e classificação de gravidade
 - separação entre parecer aos autores e recomendação confidencial ao editor
+- saídas por modo, viabilidade das correções e avaliação internacional adequada ao gênero
+- módulos de métodos mistos e texto como dado/IA, sem notas de qualidade ou probabilidades de aceite
 
 **Pasta** [`skills/parecerista-academico/`](skills/parecerista-academico/)  
 **Arquivo principal** [`SKILL.md`](skills/parecerista-academico/SKILL.md)
@@ -89,6 +91,8 @@ Principais recursos
 - funcionamento com um único agente por padrão, sem exigir orquestração ou pesquisa externa desnecessária
 - scripts locais para verificar a integridade do pacote e comparar elementos protegidos entre versões de texto
 - casos de avaliação comportamental para manutenção e testes
+- diagnóstico interno proporcional e registro de alterações substantivas sem retirar autonomia autorizada
+- módulos de métodos mistos e texto como dado/IA, com critérios condicionais ao desenho
 - regras explícitas contra fabricação de dados, referências, páginas, citações, procedimentos e resultados
 
 **Pasta** [`skills/escritaacademica/`](skills/escritaacademica/)  
@@ -128,7 +132,11 @@ rcs-skills-academicas/
     ├── parecerista-academico/
     │   ├── SKILL.md
     │   ├── README.md
-    │   └── CITATION.cff
+    │   ├── CITATION.cff
+    │   ├── references/
+    │   ├── assets/
+    │   ├── scripts/
+    │   └── tests/
     ├── fichamento-academico/
     │   ├── SKILL.md
     │   ├── README.md

@@ -10,7 +10,7 @@ Aplicar quando o usuário pede preparar, posicionar ou revisar para leitores int
 
 Usar tipo de publicação, área, público e instruções fornecidas. Se uma revista é indicada e o usuário pede preparação para ela, consultar requisitos pertinentes no escopo autorizado, sem nova permissão para leitura. Distinguir regras oficiais, orientação editorial e padrões inferidos de artigos publicados.
 
-Verificar tipo de artigo, escopo, extensão, resumo, referências, anonimização, transparência e declarações quando pertinentes. Registrar URL e data de acesso em tarefa de submissão. Se a página não abrir, marcar exigência não verificada e continuar o trabalho de manuscrito. Não inventar política, taxa, limite ou probabilidade de aceitação.
+Verificar requisitos específicos atuais, inclusive tipo de artigo e escopo; eles também podem mudar. Material fornecido sem data não comprova vigência atual. Verificar extensão, resumo, referências, anonimização, transparência e declarações quando pertinentes. Registrar URL e data de acesso em tarefa de submissão. Se a página não abrir, marcar exigência não verificada e continuar o trabalho de manuscrito. Não inventar política, taxa, limite ou probabilidade de aceitação.
 
 Sem destino definido, melhorar legibilidade do argumento e discutir categorias de público se solicitado. Não tornar a ausência de revista uma falha científica. Não recomendar veículo específico de memória.
 
@@ -43,6 +43,18 @@ Acrescentar literatura quando solicitado e verificado. Não citar trabalhos do p
 Título deve indicar o objeto e problema sem prometer conclusão não defendida. Introdução precisa tornar a direção do texto reconhecível cedo, conforme gênero. Resumo deve apresentar o trabalho efetivo. Discussão deve explicar consequência e limites da resposta.
 
 Não usar roteiro fixo de importância, lacuna, método e resultado para todas as tradições. Para texto teórico, apresentar problema conceitual e argumento. Para projeto, não inserir resultados inexistentes. Para ensaio, preservar percurso quando ele realiza função.
+
+## Resumos e força das afirmações
+
+Usar modelos de movimentos retóricos apenas quando ajudam a representar o gênero e atendem ao destino. Não impor abertura de importância consensual, seis movimentos, ausência universal de citações ou segunda versão de 150 palavras. Seguir a extensão documentada e contar palavras quando há limite.
+
+Em artigo teórico, resumir problema e argumento; em estudo empírico, representar desenho e achados; em projeto, representar proposta. Não preencher um movimento com informação ausente. Registrar fora da prosa a pendência indispensável ou identificar rascunho incompleto conforme o pedido.
+
+Quando existirem resumo e abstract, conferir equivalência de pergunta, abordagem, achados ou argumento, contribuição e limites contra o corpo. Corrigir divergência resolvida pelo corpo no escopo autorizado; se as versões conflitam sem base decisiva, localizar o conflito.
+
+Calibrar a proposição, não apenas o verbo. “A tabela mostra uma associação” pode ser exato; “a associação demonstra causalidade” não ganha sustentação por escolha estilística. Não enfraquecer fatos documentados com cautela ritual nem elevar interpretação a resultado comprovado.
+
+Verificar o papel de cada seção no percurso do leitor, sem exigir uma frase de importância no final de todas elas. Explicar contexto local necessário sem inventar função comparativa, motivo de seleção ou mecanismo ausente.
 
 ## Revisão e resposta editorial
 

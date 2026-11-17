@@ -49,6 +49,16 @@ Conferir extensão efetiva. Separar regras oficiais de convenções ou padrões 
 
 Não repetir revisão indefinidamente. Depois de corrigir, reavaliar partes afetadas e dependências. Ampliar checagem apenas diante de alteração, falha ou dúvida relevante.
 
+## Conferir a versão entregue
+
+Conferir na versão final as relações globais e os elementos materiais alterados: pergunta, promessa, procedimento, resultados, tabelas, resumos e conclusão. Reaproveitar verificações ainda válidas; não copiar um estado anterior quando o conteúdo ou sua dependência mudou.
+
+Quando houver relatório de auditoria, usar **atendido**, **parcial**, **problema identificado**, **não verificável** ou **não aplicável**, com evidência e motivo para não aplicação. Distinguir falta de relato de falha demonstrada do estudo.
+
+Verificar se adições têm procedência adequada e escopo autorizado; se citações foram preservadas ou traduzidas no escopo pedido; se a força das afirmações corresponde à evidência; se resumos e corpo concordam; e quais pendências permanecem. Não responder “não houve alteração” quando a comparação não pôde ser feita.
+
+Diferenças numéricas podem refletir unidades ou amostras analíticas distintas. Conferir denominadores e documentação antes de chamar diferença de erro. Se a divergência permanecer sem explicação, não escolher um valor nem ocultar o conflito.
+
 ## Relatar sem substituir entrega
 
 Se o usuário pediu somente texto, entregar texto e apenas pendência material indispensável fora dele. Se pediu relatório, usar localização, problema, consequência e ação realizada ou necessária. Não produzir notas de qualidade ou probabilidades de aceitação.

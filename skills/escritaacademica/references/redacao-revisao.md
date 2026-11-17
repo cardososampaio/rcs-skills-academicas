@@ -14,6 +14,20 @@ Separar texto para o leitor e pendências para o autor. A ausência de decisão 
 
 Se poucas notas não sustentam a extensão sem repetição, não preenchê-la com comentários sobre o processo, ausência de informações ou elogios. Desenvolver as relações disponíveis e informar o limite fora do texto quando necessário. A extensão solicitada orienta o trabalho, sem autorizar conteúdo vazio.
 
+## Reconhecer autorizações já concedidas
+
+O pedido e seu contexto definem a profundidade da intervenção e a base utilizável. Não pedir confirmação por frase nem tratar todo desenvolvimento como fabricação.
+
+| Pedido | Executar | Limite |
+|---|---|---|
+| Desenvolva a discussão com estes resultados | Articular resultados, interpretações e limites sustentados | Não criar achado ou atribuição externa |
+| Reorganize o argumento desta seção | Mover e conectar conteúdo, conferindo referentes e citações | Não trocar a posição defendida silenciosamente |
+| Atualize a literatura sobre esta questão | Pesquisar, verificar e integrar fontes pertinentes | Não ampliar para outro problema sem necessidade |
+| Prepare o artigo para a revista indicada | Conferir requisitos e fazer adequações compatíveis com o pedido | Não inventar política nem executar nova análise implicitamente |
+| Melhore a escrita | Corrigir forma e clareza preservando sentido | Não reformular hipótese ou resultado por iniciativa própria |
+
+Uma análise adicional explicitamente solicitada pode ser executada com dados adequados como operação identificada e documentada; sua necessidade para melhorar o texto não equivale à autorização. Se faltar uma decisão que redefine a tese, localizar a questão e continuar as partes independentes.
+
 ## Corrigir e reescrever
 
 Compreender trecho inteiro antes de editar frases. Identificar argumento, função, conceitos, atribuições e ambiguidades. Congelar dados e citações diretas.
@@ -46,11 +60,15 @@ Ao fundir partes, conferir se surgiu nova causalidade, consenso entre autores ou
 
 Identificar versão do manuscrito, comentários e prioridades editoriais. Agrupar problemas e implementar pedidos autorizados com sustentação existente. Propor discordância quando solicitação não corresponde ao desenho ou aos dados.
 
-Preparar resposta após alterações ou identificar ações planejadas. Conferir cada alegação com a versão entregue. Não alegar atendimento integral genérico.
+Antes da resposta, identificar pedidos incompatíveis entre pareceristas, decisões do editor e escolhas pendentes do autor. Separar aceitação ou discordância da dependência de nova análise; não escolher silenciosamente entre pedidos contraditórios.
+
+Preparar resposta após alterações ou identificar ações planejadas. Conferir cada alegação com a versão entregue. Não alegar atendimento integral genérico. Conferir que respostas a diferentes pareceristas não se contradizem nem divergem do manuscrito.
 
 ## Registrar quando necessário
 
 Comparar mentalmente versão curta e original. Para manuscrito reestruturado ou desenvolvido, registrar movimentos e adições, sobretudo decisões substantivas e novas fontes. Usar controle de alterações quando disponível e solicitado.
+
+Para cada mudança substantiva, conservar registro recuperável de localização, natureza, base que a sustenta e eventual decisão pendente. Distinguir mudança realizada de proposta. Não cadastrar cada ajuste de concordância. Rótulos como redação, argumento ou verificação podem ajudar um relatório, mas não entram na prosa acadêmica nem substituem a justificativa.
 
 Não exigir relatório visível em toda tarefa. Diante de pedido de texto apenas, entregar versão e somente pendência material que não pode ficar oculta.
 

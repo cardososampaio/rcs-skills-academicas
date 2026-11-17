@@ -20,6 +20,7 @@ REQUIRED = {
     "references/teoria-historia.md", "references/prosa-estilo.md", "references/traducao.md",
     "references/internacionalizacao.md", "references/textos-longos.md",
     "references/auditoria.md", "references/avaliacao.md",
+    "references/pre-submissao.md", "references/metodos-mistos.md", "references/texto-dados-ia.md",
 }
 
 

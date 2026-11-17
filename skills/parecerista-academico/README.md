@@ -12,11 +12,26 @@ Também inclui regras de rastreabilidade, atomicidade das críticas, verificaç�
 
 ## Arquivo principal
 
-- [`SKILL.md`](SKILL.md) — protocolo completo, versão 2.0.0.
+- [`SKILL.md`](SKILL.md) — núcleo, modos e rotas, versão 2.1.0.
+- [`references/`](references/) — protocolo, critérios por desenho, saídas, viabilidade e internacionalização.
+- [`assets/casos-avaliacao.json`](assets/casos-avaliacao.json) — cenários sintéticos para ensaios de comportamento.
+- [`scripts/check_package.py`](scripts/check_package.py) — verificação de integridade do pacote.
+
+## O que muda na versão 2.1.0
+
+Saídas distintas para parecer completo, avaliação focal, reavaliação e resposta a pareceristas tornam explícito o que foi examinado. A recomendação confidencial fica separada quando a tarefa é dirigida ao editor. Problemas principais incluem viabilidade, sem confundir gravidade com possibilidade de reparo.
+
+Notas de qualidade e probabilidades de aceite são recusadas em favor de diagnóstico fundamentado. A preparação internacional respeita gênero e contribuição, e os módulos de métodos mistos e texto como dado/IA aplicam critérios ao desenho efetivo. Os critérios existentes permanecem disponíveis em referências carregadas conforme a tarefa.
+
+A versão do núcleo fica em `metadata.version`, para compatibilidade com o formato de skills, e corresponde à versão do arquivo de citação.
+
+## Verificação
+
+Executar `python scripts/check_package.py --self-test` na pasta da skill. O comando verifica estrutura e exercita falhas de empacotamento; não avalia qualidade científica. Para ensaios com agentes, seguir [Avaliação](references/avaliacao.md). A existência de casos não significa que suas saídas foram executadas ou aprovadas.
 
 ## Instalação
 
-Copie esta pasta para o diretório de skills do seu agente, preservando `SKILL.md` na raiz da skill.
+Copie esta pasta para o diretório de skills do seu agente, preservando `SKILL.md` e todos os recursos relativos. Copiar apenas o arquivo principal deixa os critérios e modos incompletos.
 
 Exemplo:
 
@@ -36,6 +51,6 @@ A skill apoia o julgamento humano. Não transforma uma execução de IA em parec
 
 ## Citação
 
-> Sampaio, Rafael Cardoso. *Parecerista Acadêmico*. Skill para agentes de IA. Versão 2.0.0. 2026.
+> Sampaio, Rafael Cardoso. *Parecerista Acadêmico*. Skill para agentes de IA. Versão 2.1.0. 2026.
 
-Licença MIT conforme o arquivo [`LICENSE`](../../LICENSE) da raiz do repositório.
+Licença MIT conforme o arquivo [LICENSE do repositório](https://github.com/cardososampaio/rcs-skills-academicas/blob/main/LICENSE).

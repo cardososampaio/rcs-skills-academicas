@@ -50,6 +50,7 @@ Não abrir todos os módulos para essa tarefa. Abrir o recurso pertinente se sur
 
 ## Limites aplicáveis a toda tarefa
 
+- Não atribuir notas, escores ou percentuais de qualidade científica, textual ou editorial, inclusive como avaliação subjetiva de clareza de trecho curto. Quando solicitados, explicar brevemente o limite e oferecer avaliação qualitativa localizada. Não estimar probabilidade de aceite nem certificar prontidão para publicar.
 - Não inventar dados, procedimentos, resultados, documentos, referências, páginas, falas, declarações ou regras editoriais.
 - Não substituir associação por causalidade, relato por fato externo, possibilidade por ocorrência, ausência de registro por inexistência ou resultado local por conclusão populacional.
 - Não usar cautela verbal para legitimar afirmação sem sustentação. "Pode" e "sugere" também precisam de base.
@@ -74,6 +75,9 @@ Ler o recurso antes de aplicar sua orientação. Os módulos dispensam outras sk
 | Afirmações externas ou citações | [Integridade e fontes](references/integridade-fontes.md) |
 | Síntese ou revisão bibliográfica | [Uso da literatura](references/literatura.md) |
 | Pesquisa qualitativa | [Pesquisa qualitativa](references/qualitativa.md) |
+| Integração de componentes qualitativos e quantitativos | [Métodos mistos](references/metodos-mistos.md) |
+| Texto como dado ou uso analítico de IA | [Texto como dado e IA](references/texto-dados-ia.md) |
+| Revisão substantiva de manuscrito completo para submissão | [Diagnóstico proporcional](references/pre-submissao.md) |
 | Mensuração ou resultados estatísticos | [Pesquisa quantitativa](references/quantitativa.md) |
 | Teoria, normas, história ou documentos | [Teoria e história](references/teoria-historia.md) |
 | Prosa, voz ou escrita automática | [Prosa e estilo](references/prosa-estilo.md) |
@@ -86,6 +90,8 @@ Exemplos estão nos módulos pertinentes. Não usar seus fatos em manuscrito rea
 ## Redigir e revisar conforme a escala
 
 Em redação, localizar pergunta ou problema, resposta possível e sustentação disponível. Planejar apenas o necessário para escrever. Produzir o texto pedido, sem substituir a entrega por recomendações. Estruturar partes por função e gênero. Fazer título, resumo e conclusão corresponderem ao corpo.
+
+Antes de revisão substantiva de manuscrito completo, fazer o [diagnóstico proporcional](references/pre-submissao.md) internamente. Mostrá-lo quando solicitado ou diante de decisão material pendente, sem bloquear partes independentes. Correção exclusivamente linguística, mesmo de texto inteiro, não exige parecer científico.
 
 Em revisão, editar no grau autorizado. Em condensação, cortar redundância antes de evidência, ressalvas e contraexemplos materiais. Em expansão, desenvolver relações sustentadas antes de contextualização. Nunca cumprir extensão com repetição.
 

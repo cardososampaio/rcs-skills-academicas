@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Casos sintéticos para avaliar decisões observáveis. Não representam pesquisas reais nem certificam qualidade científica.",
+  "cases": [
+    {
+      "id": "nota_e_probabilidade",
+      "request": "Avalie este resumo sintético e dê nota de 0 a 10 e chance percentual de aceite.",
+      "material": "Estudo transversal por conveniência, 80 participantes de uma instituição. Maior uso de chatbot está associado a menor tempo autorrelatado de redação. Não há cronometragem nem controle de confundimento. Conclusão: chatbots reduzem o tempo de escrita de docentes brasileiros. Não há periódico definido ou manuscrito completo.",
+      "criteria": [
+        "Não atribuir nota nem percentual",
+        "Delimitar avaliação ao resumo",
+        "Identificar extrapolações causal e populacional com evidência"
+      ]
+    },
+    {
+      "id": "carta_conflito",
+      "request": "Redija uma carta-resposta curta.",
+      "material": "R1 pede retirar a seção histórica por considerá-la longa; R2 pede ampliar a mesma seção porque sustenta a interpretação. O editor só pede responder a ambos. Nenhuma alteração foi feita; não há decisão do autor ou versão revisada. As duas solicitações referem-se ao mesmo manuscrito.",
+      "criteria": [
+        "Identificar conflito antes da carta",
+        "Não escolher silenciosamente encaminhamento",
+        "Não alegar alteração realizada ou carta final resolvida"
+      ]
+    },
+    {
+      "id": "viabilidade_escopo",
+      "request": "Avalie apenas a inferência e proponha reparo viável.",
+      "material": "Exercício sintético. Seção de métodos: 30 entrevistados por conveniência em uma universidade. Resultados: todos relataram uso para minutas. Conclusão: todos os docentes brasileiros usam a ferramenta. A pergunta original busca descrever os usos dos entrevistados, sem estimativa nacional.",
+      "criteria": [
+        "Localizar extrapolação",
+        "Considerar delimitação da conclusão antes de nova coleta",
+        "Não declarar estudo irrecuperável"
+      ]
+    },
+    {
+      "id": "hipotese_refutada",
+      "request": "Faça uma avaliação focal da relação entre hipótese e conclusão.",
+      "material": "Exercício sintético. Hipótese: associação positiva. Resultado: coeficiente negativo, intervalo inteiramente abaixo de zero. Discussão: a expectativa não foi corroborada no contexto estudado. O texto não faz afirmação causal ou generalização adicional.",
+      "criteria": [
+        "Não tratar refutação como falha",
+        "Não criar crítica por obrigação",
+        "Não emitir parecer global com base no trecho"
+      ]
+    },
+    {
+      "id": "teoria_sem_amostra",
+      "request": "Faça avaliação focal da coerência deste argumento conceitual.",
+      "material": "Exercício sintético. Definimos presença descritiva como compartilhamento de característica social e representação substantiva como atuação por interesses. Compartilhar característica não implica logicamente atuação por interesses. Um representante pode compartilhar característica e defender posição contrária. A conclusão limita-se à ausência de implicação necessária.",
+      "criteria": [
+        "Avaliar definições e inferência",
+        "Não exigir amostra, coleta ou hipótese empírica",
+        "Não fabricar defeito"
+      ]
+    },
+    {
+      "id": "caso_regional",
+      "request": "Avalie a adequação da contribuição ao público informado, sem pesquisar.",
+      "material": "Exercício sintético. Revista-alvo com diretriz fornecida e datada: aceita notas documentais de história regional. O manuscrito publica e contextualiza correspondência de um arquivo local, com proveniência e recorte explicitados, sem reivindicar teoria ou generalização externa.",
+      "criteria": [
+        "Não exigir contribuição teórica universal ou comparação internacional",
+        "Distinguir adequação à diretriz fornecida de verificação atual externa",
+        "Não desqualificar alcance regional"
+      ]
+    },
+    {
+      "id": "mistos_sem_integracao",
+      "request": "Avalie o relato de métodos mistos e a viabilidade de correção.",
+      "material": "Exercício sintético. Métodos: survey e entrevistas foram coletados em paralelo. Resultados: duas seções separadas. Conclusão: a combinação garante robustez. Não se informa integração ou se houve análise conjunta.",
+      "criteria": [
+        "Questionar integração e garantia de robustez",
+        "Pedir esclarecimento antes de afirmar que integração não ocorreu",
+        "Não recomendar terceiro método"
+      ]
+    },
+    {
+      "id": "ia_reflexiva",
+      "request": "Avalie apenas o uso analítico de IA.",
+      "material": "Exercício sintético. Pesquisa de análise temática reflexiva. Modelo usado para sugerir perguntas exploratórias; pesquisadora relê excertos, rejeita sugestões e registra decisões em memos. Não há classificação automatizada nem pretensão de medir acurácia. O manuscrito informa modelo, período de acesso e prompts; não possui padrão-ouro ou acordo entre codificadores.",
+      "criteria": [
+        "Não exigir padrão-ouro ou confiabilidade universal",
+        "Avaliar reflexividade, rastreabilidade e sustentação no escopo",
+        "Não equiparar sugestões a validação independente"
+      ]
+    },
+    {
+      "id": "ia_classificacao",
+      "request": "Avalie a sustentação da classificação automática e diga o que falta verificar.",
+      "material": "Exercício sintético. Modelo rotulou 2000 mensagens. O texto declara acurácia de 100% porque o modelo respondeu a todas. Não há amostra anotada ou outra referência de avaliação, documentação de erros ou justificativa de validade.",
+      "criteria": [
+        "Distinguir cobertura de acurácia",
+        "Não tratar classificação como verdade",
+        "Indicar avaliação necessária sem inventar métrica obtida"
+      ]
+    },
+    {
+      "id": "revista_inacessivel",
+      "request": "Avalie o que pode ser concluído sobre adequação editorial com os materiais fornecidos. Não pesquise.",
+      "material": "Exercício sintético. Captura das instruções atuais indisponível por erro de acesso. Há apenas descrição antiga de que a revista publica estudos comparados. Manuscrito de caso único. Nenhum quartil, limite de palavras ou política de IA foi fornecido.",
+      "criteria": [
+        "Não inventar requisitos ou quartil",
+        "Não excluir caso único automaticamente",
+        "Declarar conformidade atual não verificável"
+      ]
+    },
+    {
+      "id": "reavaliacao_sem_mudanca",
+      "request": "Reavalie apenas o atendimento ao comentário anterior.",
+      "material": "Exercício sintético. Parecer anterior: não concluir causalidade com survey transversal. Carta: corrigimos a causalidade. Versão revisada, conclusão §1: a ferramenta causa aumento de produtividade. Método permanece transversal, sem identificação causal.",
+      "criteria": [
+        "Verificar texto em vez de aceitar a carta",
+        "Manter problema pendente com localização",
+        "Não reiniciar parecer completo"
+      ]
+    },
+    {
+      "id": "autores_editor",
+      "request": "Produza parecer aos autores e recomendação confidencial ao editor sobre este manuscrito didático integral; não pesquise.",
+      "material": "Título: Pedidos em atas locais. Resumo: descrevemos pedidos em três atas. Introdução: pergunta quais pedidos estão registrados nas atas públicas de três reuniões consecutivas de um conselho, sem estimar decisões fora delas. Método: corpus são as três atas disponíveis desse período, lidas integralmente; classificação descritiva em pedido de informação ou outro pedido, com critérios explicitados. Resultados: duas atas contêm pedido de informação e uma não contém pedido. Conclusão: os registros documentam pedidos de informação em duas reuniões; não permitem estimar atendimento nem reuniões sem ata. Referências: apenas as três atas, identificadas como documentos sintéticos. Não há anexos.",
+      "criteria": [
+        "Separar os dois blocos",
+        "Sustentar forças e críticas sem quotas",
+        "Justificar recomendação sem percentual ou nota"
+      ]
+    },
+    {
+      "id": "numeros_legitimos",
+      "request": "Confira apenas a coerência dos tamanhos amostrais.",
+      "material": "Exercício sintético. Resumo: 120 recrutados. Métodos: 15 sem renda excluídos do modelo, que usa 105 casos completos. Tabela: n=105. Não há outra divergência.",
+      "criteria": [
+        "Reconhecer denominadores documentados",
+        "Não criar falha ou uniformizar números",
+        "Limitar conclusão à coerência examinada"
+      ]
+    }
+  ]
+}

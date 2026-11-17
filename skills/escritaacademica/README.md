@@ -10,6 +10,12 @@ O núcleo preserva argumento, dados, citações, conceitos, qualificadores e voz
 
 A skill não impõe IMRaD, hipóteses, saturação, acordo entre codificadores ou outros critérios incompatíveis com o desenho do trabalho. Pesquisa externa, múltiplos agentes e ferramentas auxiliares não são exigidos por padrão.
 
+## O que muda na versão 1.1.0
+
+Revisão substantiva de manuscrito completo começa por diagnóstico interno proporcional, sem exigir parecer visível ou nova permissão para elaboração já autorizada. Mudanças substantivas têm registro de localização, base e pendências; correções linguísticas continuam diretas.
+
+A preparação internacional distingue gênero, contribuição e requisitos atuais. Métodos mistos recebem orientação própria de integração, e texto como dado/IA distingue classificação de interpretação. A auditoria da versão entregue preserva diferenças legítimas de denominadores e explicita o que não pôde ser verificado.
+
 ## Estrutura
 
 - [`SKILL.md`](SKILL.md) contém o protocolo principal e o roteamento entre módulos.
@@ -56,6 +62,6 @@ A skill não autoriza inventar dados, referências, páginas, citações, proced
 
 ## Citação
 
-> Sampaio, Rafael Cardoso. *Escrita Acadêmica*. Skill para agentes de IA. Versão 1.0.0. 2026.
+> Sampaio, Rafael Cardoso. *Escrita Acadêmica*. Skill para agentes de IA. Versão 1.1.0. 2026.
 
 Licença MIT conforme o arquivo LICENSE da raiz do repositório.
